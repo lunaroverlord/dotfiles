@@ -1,0 +1,37 @@
+!altgr to alt (screws alt tab)
+
+clear Lock
+!keycode 9 = Caps_Lock NoSymbol Caps_Lock
+keycode 66 = Escape NoSymbol Escape
+
+keycode 94 = Shift_L
+!keycode 111 = slash question
+!keycode 135 = Up
+keycode 102 = space
+keycode 100 = space
+keycode 132 = BackSpace
+keycode 97 = Shift_R
+
+!?
+!keycode 9 = grave asciitilde
+
+!filco
+!keycode 61 = Up
+!keycode 111 = slash question
+keycode 108 = Left
+keycode 134 = Down
+keycode 119 = Right
+!keycode 64 = Mode_switch
+!keycode 43 = h H Left H
+!keycode 44 = j J Down J
+!keycode 45 = k K Up K
+!keycode 46 = l L Right L
+
+! shift + backspace = delete
+keycode 22 = BackSpace Delete
+
+!keycode 43 = h H Left Left
+!keycode 44 = j J Down Down
+!keycode 45 = k K Up Up
+!keycode 46 = l L Right Right
+

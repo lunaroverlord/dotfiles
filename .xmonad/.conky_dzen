@@ -1,0 +1,19 @@
+conky.config = {
+    background = true,
+    out_to_console = true,
+    out_to_x = false,
+    update_interval = 1,
+};
+ 
+conky.text = [[
+^fg(\#5091ca) ^i(/home/olafs/.xmonad/dzen2/cpu.xbm) ^fg(\#FFFFFF)${cpu}%\
+^fg(\#5091ca) ^i(/home/olafs/.xmonad/dzen2/mem.xbm) ^fg(\#FFFFFF)${memperc}%\
+^fg(\#0066FF) ${if_existing /proc/net/route wlan0} ${endif}\
+^fg(\#5091ca) ^i(/home/olafs/.xmonad/dzen2/bat_full_01.xbm)\
+${exec acpi -b | grep -o '[^ ]*%' | head -n 1 | dzen2-gdbar -max 100 -min 0 -h 12 -w 10 -s v} \
+^fg(\#5091ca) ^i(/home/olafs/.xmonad/dzen2/temp.xbm) ^fg(\#EEEEEE)${acpitemp}°C\
+^fg(\#5091ca) ^i(/home/olafs/.xmonad/dzen2/phones.xbm) \
+^fg(\#00eeee)${exec amixer get Master | egrep -o "[0-9]+%" | head -1 | egrep -o "[0-9]*" | dzen2-gdbar -max 100 -min 0 -h 8 -w 30} \
+^fg(\#5091ca) ^i(/home/olafs/.xmonad/dzen2/clock.xbm)\
+^fg(\#EEEEEE) ${time %d.%m.%Y} ^fg(\#5091ca) ${time %R}
+]];
