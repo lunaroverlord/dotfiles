@@ -210,7 +210,9 @@ if exists('g:vscode')
   nmap <leader>0 :call VSCodeNotify('jupyter.restartkernel')<cr>
 else
   " COC
-  set statusline^=%{coc#status()}%{get(b:,'coc_current_function','')}
+  if exists(":CocInfo")
+      set statusline^=%{coc#status()}%{get(b:,'coc_current_function','')}
+  endif
 
   autocmd FileType python let b:coc_root_patterns = ['env', '.git', '.env', 'venv', '.venv', 'setup.cfg', 'setup.py', 'pyproject.toml', 'pyrightconfig.json']
   " Use tab for trigger completion with characters ahead and navigate.
@@ -253,8 +255,8 @@ else
   " Jupyter
   let g:cell = "# \\?%%"
   nmap <leader>c<space> o# %%<cr><esc>
-  map <C-[> :call search(g:cell, 'b')<cr>
-  map <C-]> :call search(g:cell)<cr>
+  map g[ :call search(g:cell, 'b')<cr>
+  map g] :call search(g:cell)<cr>
   function! Cell()
       let g:saved_cursor = getpos('.')
       normal! l
@@ -289,6 +291,8 @@ else
   nnoremap <silent>       gi :MoltenImagePopup<CR>
   nnoremap <silent>       gb :MoltenOpenInBrowser<CR>
 
-  nmap <leader>C :CopilotChatOpen<cr>
+  nmap <leader>cp :CopilotChatOpen<cr>
   
 endif
+
+map <esc> <esc>
