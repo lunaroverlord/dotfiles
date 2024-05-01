@@ -24,7 +24,7 @@ require("lazy").setup({
         init = function()
             vim.g.molten_output_win_max_height = 200
             vim.g.molten_image_provider = "image.nvim"
-            vim.g.molten_auto_open_html_in_browser = 1
+            vim.g.molten_auto_open_html_in_browser = 0
         end,
     };
     {

@@ -253,10 +253,21 @@ else
   endfunction
 
   " Jupyter
-  let g:cell = "# \\?%%"
-  nmap <leader>c<space> o# %%<cr><esc>
-  map g[ :call search(g:cell, 'b')<cr>
-  map g] :call search(g:cell)<cr>
+  let g:cell = "^# \\?%%"
+  nmap <leader>co o# %%<cr><esc>
+  nmap <leader>cO O# %%<cr><esc>
+
+  function! SearchAndJump(pattern, direction, defaultAction)
+    let l:line = search(a:pattern, a:direction)
+    if l:line != 0
+      silent execute "normal! " . l:line . "G"
+    else
+      silent execute "normal! " . a:defaultAction
+    endif
+  endfunction
+  nnoremap <silent> { :call SearchAndJump(g:cell, 'b', '{')<cr>
+  nnoremap <silent> } :call SearchAndJump(g:cell, '', '}')<cr>
+
   function! Cell()
       let g:saved_cursor = getpos('.')
       normal! l
@@ -281,6 +292,7 @@ else
   nnoremap <silent>       <leader>rd :MoltenDelete<CR>
   nnoremap <silent>       <leader>r0 :MoltenRestart<CR>
   nnoremap <silent>       <leader>rc :MoltenInterrupt<CR>
+  nnoremap <silent>       <leader>rg :MoltenGoto<CR>
   nnoremap <silent>       <leader>rw :MoltenSave<CR>
   nnoremap <silent>       <leader>rl :MoltenLoad<CR>
   nnoremap <silent>       <leader>rn :MoltenNext<CR>
