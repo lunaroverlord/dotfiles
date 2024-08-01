@@ -59,6 +59,11 @@ require("lazy").setup({
         'nvim-treesitter/nvim-treesitter',
         build = ':TSUpdate',
     };
+    -- init.lua:
+    {
+        'nvim-telescope/telescope.nvim', tag = '0.1.8',
+        dependencies = { 'nvim-lua/plenary.nvim' }
+    };
     {
       "epwalsh/obsidian.nvim",
       version = "*",  -- recommended, use latest release instead of latest commit
@@ -78,6 +83,14 @@ require("lazy").setup({
             name = "personal",
             path = "~/Documents/Obsidian Vault",
           },
+          {
+            name = "maxtor",
+            path = "~/maxtor/mandragora/dox",
+          },
+        },
+        picker = {
+            -- Set your preferred picker. Can be one of 'telescope.nvim', 'fzf-lua', or 'mini.pick'.
+            name = "telescope.nvim",
         },
       },
     };
@@ -109,6 +122,18 @@ require("lazy").setup({
     };
     {
         'justinmk/vim-sneak',
+    };
+    {
+        'mg979/vim-visual-multi',
+    };
+    {
+        'mvanderkamp/vim-pudb-and-jam',
+    };
+    {
+        'lewis6991/gitsigns.nvim',
+        config = function()
+            require('gitsigns').setup()
+        end
     };
     {
         'bling/vim-airline',

@@ -57,13 +57,13 @@ map <C-j> <C-d>
 map <C-k> <C-u>
 map <C-l> :bn<cr>
 map <C-h> :bp<cr>
-map <C-n> :enew<CR>
+map <C-M-n> :enew<CR>
 map <C-M-l> :tabn<cr>
 map <C-M-h> :tabp<cr>
 map <C-M-n> :tabnew<CR>
 map <C-p> :b#<CR>
-"map <C-[> [m
-"map <C-]> ]m
+map ( [m
+map ) ]m
 
 nnoremap j gj
 nnoremap k gk
@@ -76,11 +76,12 @@ nnoremap grl :vertical resize +5<cr>
 map Q :bp\|bd #<cr>
 
 map <cr> :Files<cr>
-map <leader>t :NERDTreeToggle<cr>
-map <leader>f :RG<cr>
-map <leader>g :Rg <C-r><C-w><cr>
+map <leader>t :Telescope<cr>
+map <leader>g :RG<cr>
+map <leader>G :Rg <C-r><C-w><cr>
 map <leader>h :GFiles?<cr>
-map <leader>b :Buffers<cr>
+"map <leader>b :Buffers<cr>
+map <leader>f :BLines<cr>
 map <leader>l :Lines<cr>
 
 "map <leader>n <esc>:cn<cr>
@@ -89,8 +90,10 @@ map <leader>m <esc>:wa<cr>:make -s<cr>
 map <leader>d :!kitty make debug<cr>
 "map <leader>j <esc>:w<cr>:bn!<cr>
 "map <leader>k <esc>:w<cr>:bp!<cr>
-vmap <leader>c <esc>"+y
-nmap <leader>v <esc>"+p
+"vmap <leader>c <esc>"+y
+"nmap <leader>v <esc>"+p
+map <leader>c gcc<Nop>
+vmap <leader>c gc<Nop>
 nmap <leader>w <esc>:update<cr>
 nmap <leader>q <esc>:q<cr>
 map <leader>/ <esc>:nohlsearch<cr>
@@ -148,7 +151,7 @@ au BufNewFile,BufRead *.cl setf opencl
 set rtp+=~/.fzf
 " let $FZF_DEFAULT_COMMAND = 'rg --files --hkdden'
 function! RipgrepFzf(query, fullscreen)
-  let command_fmt = 'rg -F --column --line-number --no-heading --color=always --smart-case -- %s || true'
+  let command_fmt = 'rg -g "*.{py}" -g "\!.git" -g "\!env" -F --column --line-number --no-heading --color=always --smart-case -- %s || true'
   let initial_command = printf(command_fmt, shellescape(a:query))
   let reload_command = printf(command_fmt, '{q}')
    let spec = {'options': ['--phony', '--query', a:query, '--bind', 'change:reload:'.reload_command]}
@@ -169,8 +172,8 @@ augroup commenting_blocks_of_code
   autocmd FileType vim              let b:comment_leader = '" '
   autocmd FileType lua,haskell      let b:comment_leader = '-- '
 augroup END
-noremap <silent> <leader>cc :<C-B>silent <C-E>:keeppatterns s/^/<C-R>=escape(b:comment_leader,'\/')<CR>/<CR>:nohlsearch<CR>
-noremap <silent> <leader>cu :<C-B>silent <C-E>:keeppatterns s/^\V<C-R>=escape(b:comment_leader,'\/')<CR>//e<CR>:nohlsearch<CR>
+"noremap <silent> <leader>cc :<C-B>silent <C-E>:keeppatterns s/^/<C-R>=escape(b:comment_leader,'\/')<CR>/<CR>:nohlsearch<CR>
+"noremap <silent> <leader>cu :<C-B>silent <C-E>:keeppatterns s/^\V<C-R>=escape(b:comment_leader,'\/')<CR>//e<CR>:nohlsearch<CR>
 
 
 " VS code specific / COC specific
@@ -212,6 +215,9 @@ else
   " COC
   if exists(":CocInfo")
       set statusline^=%{coc#status()}%{get(b:,'coc_current_function','')}
+      autocmd VimEnter * :call CocAction('runCommand', 'workspace.configuration.update', {
+            \ 'pyright.inlayHints.enabled': v:false
+            \ })
   endif
 
   autocmd FileType python let b:coc_root_patterns = ['env', '.git', '.env', 'venv', '.venv', 'setup.cfg', 'setup.py', 'pyproject.toml', 'pyrightconfig.json']
@@ -234,7 +240,9 @@ else
   nmap <silent> gy <Plug>(coc-type-definition)
   nmap <silent> gI <Plug>(coc-implementation)
   nmap <silent> gr <Plug>(coc-references)
-  nmap <silent> gn <Plug>(coc-rename)
+  nmap <silent> gN <Plug>(coc-rename)
+  nmap <silent> g<cr> :CocCommand<cr>
+  nmap <silent> gt :CocCommand document.toggleInlayHint<cr>
 
   map <C-LeftMouse> <LeftMouse><Plug>(coc-definition)
   map <M-LeftMouse> <LeftMouse><Plug>(coc-references)
@@ -254,8 +262,8 @@ else
 
   " Jupyter
   let g:cell = "^# \\?%%"
-  nmap <leader>co o# %%<cr><esc>
-  nmap <leader>cO O# %%<cr><esc>
+  nmap <leader>o o# %%<cr><esc>
+  nmap <leader>O O# %%<cr><esc>
 
   function! SearchAndJump(pattern, direction, defaultAction)
     let l:line = search(a:pattern, a:direction)
@@ -290,6 +298,7 @@ else
   xnoremap <silent>       <leader>r  :<C-u>MoltenEvaluateVisual<CR>
   nnoremap <silent>       <leader>re :MoltenReevaluateCell<CR>
   nnoremap <silent>       <leader>rd :MoltenDelete<CR>
+  nnoremap <silent>       <leader>rq :MoltenDeinit<CR>
   nnoremap <silent>       <leader>r0 :MoltenRestart<CR>
   nnoremap <silent>       <leader>rc :MoltenInterrupt<CR>
   nnoremap <silent>       <leader>rg :MoltenGoto<CR>
@@ -303,7 +312,36 @@ else
   nnoremap <silent>       gi :MoltenImagePopup<CR>
   nnoremap <silent>       gb :MoltenOpenInBrowser<CR>
 
-  nmap <leader>cp :CopilotChatOpen<cr>
+  nmap <leader>a :CopilotChatOpen<cr>
+
+
+  function! SwitchToPudb()
+    let buffers = filter(range(1, bufnr('$')), 'buflisted(v:val)')
+    for buf in buffers
+      if getbufvar(buf, '&buftype') == 'terminal' && bufname(buf) =~ 'pudb'
+        exec 'buffer' buf
+        return
+      endif
+    endfor
+    exec ':terminal python -m pudb %'
+  endfunction
+
+  nnoremap <C-space> :call SwitchToPudb()<cr>i<C-r>
+  tnoremap <C-space> <C-\><C-N>:b#<cr>
+  nmap <leader>b :PudbToggle<cr>
+  nmap <leader>B :PudbEdit<cr>
+  let g:pudb_sign = "¤·"
+  
+
+  nmap gG :Gitsigns diffthis<cr>
+  nmap gB :Gitsigns blame<cr>
+  nmap gs :Gitsigns stage_hunk<cr>
+  nmap gu :Gitsigns undo_stage_hunk<cr>
+  nmap gV :Gitsigns select_hunk<cr>
+  nmap gn :Gitsigns next_hunk<cr>
+  nmap gp :Gitsigns prev_hunk<cr>
+  nmap gR :Gitsigns reset_hunk<cr>
+  nmap gP :Gitsigns preview_hunk<cr>
   
 endif
 
