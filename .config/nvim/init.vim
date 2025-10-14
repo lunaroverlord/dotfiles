@@ -4,6 +4,7 @@ source ~/.vimrc
 if match(v:progname, '--noplugin') != -1
     echo "--noplugin"
 else
+    luafile ~/.config/nvim/lsp.lua
     luafile ~/.config/nvim/plugins.lua
 endif
 

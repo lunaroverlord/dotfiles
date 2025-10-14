@@ -97,7 +97,7 @@ myKeys conf@(XConfig {XMonad.modMask = modMask}) = M.fromList $
 	, ((winMask .|. altMask, xK_comma), sendMessage MirrorShrink)
 	, ((winMask .|. altMask, xK_period ), sendMessage MirrorExpand)
 	, ((winMask .|. altMask, xK_BackSpace), windows $ S.shift "dump")
-	, ((winMask, xK_o), spawn "dmenu_run -b")
+	, ((winMask, xK_o), spawn "obsidian")
 	, ((winMask, xK_Return), spawn "dmenu_run -b")
 	, ((0, xK_Print), spawn "scrot -q 95 '%Y-%m-%d-%H-%M-%S_$wx$h.png' -e 'mv $f ~/Pictures/'")
 	, ((altMask, xK_Print), spawn "scrot -s -q 95 '%Y-%m-%d-%H-%M-%S_$wx$h.png' -e 'mv $f ~/Pictures/'")

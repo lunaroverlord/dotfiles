@@ -1,4 +1,7 @@
 " Generic
+let g:augment_workspace_folders = ['~/maxtor/mandragora']
+let g:augment_disable_completions = 1
+
 set nocursorcolumn
 set nocursorline
 set mouse=a
@@ -8,12 +11,12 @@ set shiftwidth=4
 set expandtab
 syntax sync minlines=256
 let mapleader = ","
-set omnifunc=syntaxcomplete#Complete
+:set completeopt=fuzzy,longest,menuone
 set backspace=indent,eol,start  " more powerful backspacing
 set winaltkeys=no
 set ai!
 set vb!
-set switchbuf=useopen,usetab,newtab
+set switchbuf=useopen,usetab
 set hidden
 set ignorecase
 set hlsearch
@@ -21,7 +24,7 @@ set incsearch
 set smartcase
 set smarttab
 set noswapfile
-set pastetoggle=<F2>
+"set pastetoggle=<F2>
 set exrc
 set secure
 set virtualedit=block 
@@ -29,10 +32,10 @@ set vb t_vb=
 set modeline
 set ffs=unix,dos,mac
 set timeout ttimeoutlen=50
+set conceallevel=1
 set nocompatible
 set t_Co=256
 set backupcopy=yes
-colorscheme afterglow
 
 "Key mappings
 imap jj <esc>
@@ -60,7 +63,7 @@ map <C-h> :bp<cr>
 map <C-M-n> :enew<CR>
 map <C-M-l> :tabn<cr>
 map <C-M-h> :tabp<cr>
-map <C-M-n> :tabnew<CR>
+map <C-t> :enew<CR>
 map <C-p> :b#<CR>
 map ( [m
 map ) ]m
@@ -69,25 +72,29 @@ nnoremap j gj
 nnoremap k gk
 xnoremap j gj
 xnoremap k gk
-nnoremap grh :vertical resize -5<cr>
-nnoremap grk :resize +5<cr>
-nnoremap grj :resize -5<cr>
-nnoremap grl :vertical resize +5<cr>
+"nnoremap grh :vertical resize -5<cr>
+"nnoremap grk :resize +5<cr>
+"nnoremap grj :resize -5<cr>
+"nnoremap grl :vertical resize +5<cr>
+onoremap B ^
+nnoremap B ^
 map Q :bp\|bd #<cr>
 
 map <cr> :Files<cr>
+map <leader><cr> :Neotree toggle<cr>
+map g<cr> :lua MiniFiles.open()<cr>
+map g<S-cr> :Telescope find_files<cr>
 map <leader>t :Telescope<cr>
 map <leader>g :RG<cr>
 map <leader>G :Rg <C-r><C-w><cr>
 map <leader>h :GFiles?<cr>
 "map <leader>b :Buffers<cr>
-map <leader>f :BLines<cr>
+map <leader>f :Telescope grep_string grep_open_files=true search=<cr>
 map <leader>l :Lines<cr>
 
 "map <leader>n <esc>:cn<cr>
 "map <leader>p <esc>:cp<cr>
 map <leader>m <esc>:wa<cr>:make -s<cr>
-map <leader>d :!kitty make debug<cr>
 "map <leader>j <esc>:w<cr>:bn!<cr>
 "map <leader>k <esc>:w<cr>:bp!<cr>
 "vmap <leader>c <esc>"+y
@@ -95,7 +102,7 @@ map <leader>d :!kitty make debug<cr>
 map <leader>c gcc<Nop>
 vmap <leader>c gc<Nop>
 nmap <leader>w <esc>:update<cr>
-nmap <leader>q <esc>:q<cr>
+nmap <leader>q <esc>:bd<cr>
 map <leader>/ <esc>:nohlsearch<cr>
 inoremap <C-v> <C-o>:set paste<cr><C-r>+<C-o>:set paste!<cr>
 
@@ -115,6 +122,7 @@ set foldmethod=manual   "fold based on indent
 set foldnestmax=10      "deepest fold is 10 levels
 set nofoldenable        "dont fold by default
 set foldlevel=1         "
+nmap zm :RenderMarkdown toggle<cr>
 
 
 " Statusline
@@ -135,7 +143,9 @@ endfunction
 au InsertEnter * call InsertStatuslineColor(v:insertmode)
 au InsertLeave * hi statusline guibg=DarkGrey ctermfg=8 guifg=White ctermbg=15
 hi statusline guibg=DarkGrey ctermfg=8 guifg=White ctermbg=15
- 
+hi statusline cterm=NONE gui=NONE
+hi tabline cterm=NONE gui=NONE
+hi winbar cterm=NONE gui=NONE
 
 " File-related
 let g:python3_host_prog=substitute(system("which python3"), "\n", '', 'g')
@@ -151,7 +161,7 @@ au BufNewFile,BufRead *.cl setf opencl
 set rtp+=~/.fzf
 " let $FZF_DEFAULT_COMMAND = 'rg --files --hkdden'
 function! RipgrepFzf(query, fullscreen)
-  let command_fmt = 'rg -g "*.{py}" -g "\!.git" -g "\!env" -F --column --line-number --no-heading --color=always --smart-case -- %s || true'
+  let command_fmt = 'rg -g "*.{py,cc,cpp,hh,h}" -g "\!.git" -g "\!env" -F --column --line-number --no-heading --color=always --smart-case -- %s || true'
   let initial_command = printf(command_fmt, shellescape(a:query))
   let reload_command = printf(command_fmt, '{q}')
    let spec = {'options': ['--phony', '--query', a:query, '--bind', 'change:reload:'.reload_command]}
@@ -160,6 +170,8 @@ endfunction
 
 command! -nargs=* -bang RG call RipgrepFzf(<q-args>, <bang>0)
 
+" autocmd User FzfPreview :Copilot disable<cr>
+" autocmd User FzfDone :Copilot enable<cr>
 
 " Commenting blocks of code
 augroup commenting_blocks_of_code
@@ -213,52 +225,73 @@ if exists('g:vscode')
   nmap <leader>0 :call VSCodeNotify('jupyter.restartkernel')<cr>
 else
   " COC
-  if exists(":CocInfo")
-      set statusline^=%{coc#status()}%{get(b:,'coc_current_function','')}
-      autocmd VimEnter * :call CocAction('runCommand', 'workspace.configuration.update', {
-            \ 'pyright.inlayHints.enabled': v:false
-            \ })
-  endif
+  "if exists(":CocInfo")
+      "set statusline^=%{coc#status()}%{get(b:,'coc_current_function','')}
+      "autocmd VimEnter * :call CocAction('runCommand', 'workspace.configuration.update', {
+            "\ 'pyright.inlayHints.enabled': v:false
+            "\ })
+  "endif
 
-  autocmd FileType python let b:coc_root_patterns = ['env', '.git', '.env', 'venv', '.venv', 'setup.cfg', 'setup.py', 'pyproject.toml', 'pyrightconfig.json']
+  "autocmd FileType python let b:coc_root_patterns = ['env', '.git', '.env', 'venv', '.venv', 'setup.cfg', 'setup.py', 'pyproject.toml', 'pyrightconfig.json']
   " Use tab for trigger completion with characters ahead and navigate.
   " NOTE: Use command ':verbose imap <tab>' to make sure tab is not mapped by
   " other plugin before putting this into your config.
-  inoremap <silent><expr> <TAB>
- 	\ pumvisible() ? "\<C-n>" :
- 	\ <SID>check_back_space() ? "\<TAB>" :
- 	\ coc#refresh()
-  inoremap <expr><S-TAB> pumvisible() ? "\<C-p>" : "\<C-h>"
+  "inoremap <silent><expr> <TAB>
+ 	"\ pumvisible() ? "\<C-n>" :
+ 	"\ <SID>check_back_space() ? "\<TAB>" :
+ 	"\ coc#refresh()
+  "inoremap <expr><S-TAB> pumvisible() ? "\<C-p>" : "\<C-h>"
 
-  function! s:check_back_space() abort
-    let col = col('.') - 1
-    return !col || getline('.')[col - 1]  =~# '\s'
-  endfunction
+  "function! s:check_back_space() abort
+    "let col = col('.') - 1
+    "return !col || getline('.')[col - 1]  =~# '\s'
+  "endfunction
 
   " GoTo code navigation.
-  nmap <silent> gd <Plug>(coc-definition)
-  nmap <silent> gy <Plug>(coc-type-definition)
-  nmap <silent> gI <Plug>(coc-implementation)
-  nmap <silent> gr <Plug>(coc-references)
-  nmap <silent> gN <Plug>(coc-rename)
-  nmap <silent> g<cr> :CocCommand<cr>
-  nmap <silent> gt :CocCommand document.toggleInlayHint<cr>
+  nmap <silent> gd :Telescope lsp_definitions<cr>
+  nmap <silent> grr :Telescope lsp_references<cr>
+  nmap <silent> gri :Telescope lsp_implementations<cr>
+  nmap <silent> grs :Telescope lsp_document_symbols<cr>
+  nmap grt :lua vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled())<cr>
+  "nmap <silent> gy <Plug>(coc-type-definition)
+  "nmap <silent> gI <Plug>(coc-implementation)
+  "nmap <silent> gN <Plug>(coc-rename)
+  "nmap <silent> g<cr> :CocCommand<cr>
+  "nmap <silent> gt :CocCommand document.toggleInlayHint<cr>
+  "
+  "
+   "-- Go to definition
+   "vim.keymap.set('n', 'gd', vim.lsp.buf.definition, opts)
+   "-- Go to declaration
+   "vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, opts)
+   "-- Show documentation
+   "vim.keymap.set('n', 'K', vim.lsp.buf.hover, opts)
+   "-- Navigate to implementation
+   "vim.keymap.set('n', 'gi', vim.lsp.buf.implementation, opts)
+   "-- Show references
+   "vim.keymap.set('n', 'gr', vim.lsp.buf.references, opts)
+   "-- Rename symbol
+   "vim.keymap.set('n', '<leader>rn', vim.lsp.buf.rename, opts)
+   "-- Format buffer
+   "vim.keymap.set('n', '<leader>f', function() vim.lsp.buf.format { async = true } end, opts)
+  "
+  "
 
-  map <C-LeftMouse> <LeftMouse><Plug>(coc-definition)
-  map <M-LeftMouse> <LeftMouse><Plug>(coc-references)
+  "map <C-LeftMouse> <LeftMouse><Plug>(coc-definition)
+  "map <M-LeftMouse> <LeftMouse><Plug>(coc-references)
 
   " Use K to show documentation in preview window.
-  nnoremap <silent> K :call <SID>show_documentation()<CR>
+  "nnoremap <silent> K :call <SID>show_documentation()<CR>
 
-  function! s:show_documentation()
-    if (index(['vim','help'], &filetype) >= 0)
-      execute 'h '.expand('<cword>')
-    elseif (coc#rpc#ready())
-      call CocActionAsync('doHover')
-    else
-      execute '!' . &keywordprg . " " . expand('<cword>')
-    endif
-  endfunction
+  "function! s:show_documentation()
+    "if (index(['vim','help'], &filetype) >= 0)
+      "execute 'h '.expand('<cword>')
+    "elseif (coc#rpc#ready())
+      "call CocActionAsync('doHover')
+    "else
+      "execute '!' . &keywordprg . " " . expand('<cword>')
+    "endif
+  "endfunction
 
   " Jupyter
   let g:cell = "^# \\?%%"
@@ -277,40 +310,62 @@ else
   nnoremap <silent> } :call SearchAndJump(g:cell, '', '}')<cr>
 
   function! Cell()
-      let g:saved_cursor = getpos('.')
-      normal! l
-      let l:startPos = search(g:cell, 'b')
-      let l:endPos = search(g:cell)
-      if l:startPos > 0 && l:endPos > 0
-	call cursor(l:startPos, 0)
-	normal! v
-	call cursor(l:endPos - 1, 0)
-	normal! $
-      endif
-  endfunction
+  let g:saved_cursor = getpos('.')
+  normal! l
+  let l:startPos = search(g:cell, 'bW')
+  let l:endPos = search(g:cell, 'W')
+  if l:startPos > 0
+    echomsg l:endPos
+    if l:endPos == 0
+      let l:endPos = line('$') + 1
+    endif
+    call cursor(l:startPos + 1, 1)
+    normal! v
+    call cursor(l:endPos - 1, 1)
+    normal! $
+  endif
+endfunction
 
-  nnoremap <silent>       <leader>r<cr> :MoltenInit<cr>
-  nnoremap <silent> <C-CR> :call Cell()<cr>:<C-u>MoltenEvaluateVisual<cr>:call setpos('.', g:saved_cursor)<cr>
-  nnoremap <silent> <S-CR> :call Cell()<cr>:<C-u>MoltenEvaluateVisual<cr>:call search(g:cell)<cr>
-  inoremap <silent> <C-CR> <esc>:call Cell()<cr>:<C-u>MoltenEvaluateVisual<cr>:call setpos('.', g:saved_cursor)<cr>
-  inoremap <silent> <S-CR> <esc>:call Cell()<cr>:<C-u>MoltenEvaluateVisual<cr>:call search(g:cell)<cr>
-  nnoremap <silent>       <leader>rr :MoltenEvaluateLine<CR>
-  xnoremap <silent>       <leader>r  :<C-u>MoltenEvaluateVisual<CR>
-  nnoremap <silent>       <leader>re :MoltenReevaluateCell<CR>
-  nnoremap <silent>       <leader>rd :MoltenDelete<CR>
-  nnoremap <silent>       <leader>rq :MoltenDeinit<CR>
-  nnoremap <silent>       <leader>r0 :MoltenRestart<CR>
-  nnoremap <silent>       <leader>rc :MoltenInterrupt<CR>
-  nnoremap <silent>       <leader>rg :MoltenGoto<CR>
-  nnoremap <silent>       <leader>rw :MoltenSave<CR>
-  nnoremap <silent>       <leader>rl :MoltenLoad<CR>
-  nnoremap <silent>       <leader>rn :MoltenNext<CR>
-  nnoremap <silent>       <leader>rp :MoltenPrev<CR>
-  nnoremap <silent>       <leader>ro :MoltenShowOutput<CR>
-  nnoremap <silent>       <C-M-o> :noautocmd MoltenEnterOutput<CR>
-  nnoremap <silent>       go :noautocmd MoltenEnterOutput<CR>
-  nnoremap <silent>       gi :MoltenImagePopup<CR>
-  nnoremap <silent>       gb :MoltenOpenInBrowser<CR>
+ " nnoremap <silent>       <leader>r<cr> :MoltenInit<cr>
+ " nnoremap <silent> <C-CR> :call Cell()<cr>:<C-u>MoltenEvaluateVisual<cr>:call setpos('.', g:saved_cursor)<cr>
+ " nnoremap <silent> <S-CR> :call Cell()<cr>:<C-u>MoltenEvaluateVisual<cr>:call search(g:cell)<cr>
+ " inoremap <silent> <C-CR> <esc>:call Cell()<cr>:<C-u>MoltenEvaluateVisual<cr>:call setpos('.', g:saved_cursor)<cr>
+ " inoremap <silent> <S-CR> <esc>:call Cell()<cr>:<C-u>MoltenEvaluateVisual<cr>:call search(g:cell)<cr>
+  " let g:slime_python_ipython = 1
+  let g:slime_bracketed_paste = 1
+
+  nnoremap <silent> <C-CR> :call Cell()<cr>:SlimeSend<cr>:call setpos('.', g:saved_cursor)<cr>
+  nnoremap <silent> <S-CR> :call Cell()<cr>:SlimeSend<cr>:call search(g:cell)<cr>zz
+  inoremap <silent> <C-CR> <esc>:call Cell()<cr>:SlimeSend<cr>:call setpos('.', g:saved_cursor)<cr>
+  inoremap <silent> <S-CR> <esc>:call Cell()<cr>:SlimeSend<cr>:call search(g:cell)<cr>
+  nnoremap <silent> <C-space> :SlimeSendCurrentLine<cr>
+  inoremap <silent> <C-space> <esc>:SlimeSendCurrentLine<cr>
+  vnoremap <silent> <C-space> :SlimeSend<cr>
+  "nnoremap <silent> <C-S-space> ggV`` :SlimeSend<cr><C-o>zz
+  nnoremap <silent> <leader>0 :SlimeSend1 exit<cr>:SlimeSend1 ipython<cr>
+  nnoremap <silent> <C-S-space> :SlimeSend1 exit<cr>:SlimeSend1 ipython<cr>ggV`` :SlimeSend<cr><C-o>zz
+  nnoremap <silent> <leader>D :SlimeSend1 import debugpy; debugpy.listen(5678)<cr>
+  nnoremap <leader><space> :execute 'silent !kitty --hold -e ipython -i ' . expand('%:p') . ' &'<CR>:redraw!<CR>
+
+
+
+  "nnoremap <silent>       <leader>rr :MoltenEvaluateLine<CR>
+  "xnoremap <silent>       <leader>r  :<C-u>MoltenEvaluateVisual<CR>
+  "nnoremap <silent>       <leader>re :MoltenReevaluateCell<CR>
+  "nnoremap <silent>       <leader>rd :MoltenDelete<CR>
+  "nnoremap <silent>       <leader>rq :MoltenDeinit<CR>
+  "nnoremap <silent>       <leader>r0 :MoltenRestart<CR>
+  "nnoremap <silent>       <leader>rc :MoltenInterrupt<CR>
+  "nnoremap <silent>       <leader>rg :MoltenGoto<CR>
+  "nnoremap <silent>       <leader>rw :MoltenSave<CR>
+  "nnoremap <silent>       <leader>rl :MoltenLoad<CR>
+  "nnoremap <silent>       <leader>rn :MoltenNext<CR>
+  "nnoremap <silent>       <leader>rp :MoltenPrev<CR>
+  "nnoremap <silent>       <leader>ro :MoltenShowOutput<CR>
+  "nnoremap <silent>       <C-M-o> :noautocmd MoltenEnterOutput<CR>
+  "nnoremap <silent>       go :noautocmd MoltenEnterOutput<CR>
+  "nnoremap <silent>       gi :MoltenImagePopup<CR>
+  "nnoremap <silent>       gb :MoltenOpenInBrowser<CR>
 
   nmap <leader>a :CopilotChatOpen<cr>
 
@@ -326,22 +381,25 @@ else
     exec ':terminal python -m pudb %'
   endfunction
 
-  nnoremap <C-space> :call SwitchToPudb()<cr>i<C-r>
-  tnoremap <C-space> <C-\><C-N>:b#<cr>
-  nmap <leader>b :PudbToggle<cr>
-  nmap <leader>B :PudbEdit<cr>
+  nnoremap <C-,> :call SwitchToPudb()<cr>i<C-r>
+  tnoremap <C-,> <C-\><C-N>:b#<cr>
+  "nmap <leader>b :PudbToggle<cr>
+  "nmap <leader>B :PudbEdit<cr>
   let g:pudb_sign = "¤·"
   
 
   nmap gG :Gitsigns diffthis<cr>
   nmap gB :Gitsigns blame<cr>
+  nmap gb :Gitsigns blame_line<cr>
   nmap gs :Gitsigns stage_hunk<cr>
+  nmap gS :Gitsigns stage_buffer<cr>
   nmap gu :Gitsigns undo_stage_hunk<cr>
-  nmap gV :Gitsigns select_hunk<cr>
-  nmap gn :Gitsigns next_hunk<cr>
-  nmap gp :Gitsigns prev_hunk<cr>
-  nmap gR :Gitsigns reset_hunk<cr>
-  nmap gP :Gitsigns preview_hunk<cr>
+  nmap gv :Gitsigns select_hunk<cr>
+  nmap g] :Gitsigns next_hunk<cr>
+  nmap g[ :Gitsigns prev_hunk<cr>
+  nmap go :Gitsigns reset_hunk<cr>
+  nmap gp :Gitsigns preview_hunk<cr>
+  nmap gi :Gitsigns preview_hunk_inline<cr>
   
 endif
 
