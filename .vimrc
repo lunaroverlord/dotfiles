@@ -333,6 +333,18 @@ endfunction
  " inoremap <silent> <S-CR> <esc>:call Cell()<cr>:<C-u>MoltenEvaluateVisual<cr>:call search(g:cell)<cr>
   " let g:slime_python_ipython = 1
   let g:slime_bracketed_paste = 1
+  let g:slime_target = "neovim"
+  fun! StartREPL(repl)
+    execute 'terminal '.a:repl
+    setlocal nonumber
+    let t:term_id = b:terminal_job_id
+    wincmd p
+    execute 'let b:slime_config = {"jobid": "'.t:term_id . '"}'
+  endfun
+
+  nnoremap <silent> <leader>I :vsplit<CR>:wincmd l<CR>:call StartREPL("ipython")<CR>
+  tnoremap <C-h> <C-\><C-n><C-w><Left>
+
 
   nnoremap <silent> <C-CR> :call Cell()<cr>:SlimeSend<cr>:call setpos('.', g:saved_cursor)<cr>
   nnoremap <silent> <S-CR> :call Cell()<cr>:SlimeSend<cr>:call search(g:cell)<cr>zz
